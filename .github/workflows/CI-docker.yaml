@@ -1,4 +1,4 @@
-name: CI
+name: CI-docker
 env:
   github_username: ganimedes-colomar
   github_repo: dockercoins-2
