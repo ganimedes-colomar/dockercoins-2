@@ -1,6 +1,7 @@
 # dockercoins
 
 [![CI-docker](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-docker.yaml/badge.svg?branch=2021-09)](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-docker.yaml)
+[![CI-swarm](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-swarm.yaml/badge.svg?branch=2021-09)](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-swarm.yaml)
 
 ```
 github_username=ganimedes-colomar
