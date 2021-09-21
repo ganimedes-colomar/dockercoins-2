@@ -6,7 +6,7 @@ spec:
   containers:
     -
       args:
-        - hasher/hasher.rb
+        - hasher.rb
       command:
         - ruby
       env:
