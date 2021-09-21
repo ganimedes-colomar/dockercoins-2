@@ -14,9 +14,6 @@ spec:
           name: AUTHOR
           value: "Sebastian Colomar"
       image: academiaonline/simplilearn-dockercoins:latest-rng
-      livenessProbe:
-        tcpSocket:
-          port: 8080
       name: rng-container
       ports:
         -
