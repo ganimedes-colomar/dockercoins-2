@@ -17,7 +17,8 @@ for app in hasher rng webui worker
 do
   docker image build --file Dockerfile-${app} --tag ${github_username}/${github_repo}:${github_branch}-${app} /mnt/
 done
-
+```
+```
 for app in hasher rng webui worker
 do
   docker image tag ${github_username}/${github_repo}:${github_branch}-${app} ${dockerhub_username}/${github_repo}:${github_branch}-${app} 
@@ -29,7 +30,8 @@ for app in hasher rng webui worker
 do
   docker image push ${dockerhub_username}/${github_repo}:${github_branch}-${app} 
 done
-
+```
+```
 docker container run --entrypoint ruby --rm --volume ${PWD}/hasher/hasher.rb:/app/hasher.rb:ro --workdir /app/ ${github_username}/${github_repo}:${github_branch}-hasher hasher.rb
 
 docker container run --entrypoint python --rm --volume ${PWD}/rng/rng.py:/app/rng.py:ro --workdir /app/ ${github_username}/${github_repo}:${github_branch}-rng rng.py
