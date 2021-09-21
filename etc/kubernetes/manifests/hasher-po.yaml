@@ -6,7 +6,7 @@ spec:
   containers:
     -
       args:
-        - hasher.rb
+        - hasher/hasher.rb
       command:
         - ruby
       env:
@@ -38,7 +38,7 @@ spec:
         - git clone https://github.com/ganimedes-colomar/dockercoins-2 ;
         - cd dockercoins-2 ;
         - git checkout 2021-09 ;
-        - cp -v hasher/hasher.rb /public/ ;
+        - cp -r hasher/ /public/ ;
       command:
         - /bin/sh
         - -c
