@@ -4,6 +4,7 @@
 [![CI-swarm](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-swarm.yaml/badge.svg?branch=2021-09)](https://github.com/ganimedes-colomar/dockercoins-2/actions/workflows/CI-swarm.yaml)
 
 ```
+dockerhub_username=ganimedescolomar
 github_username=ganimedes-colomar
 github_repo=dockercoins-2
 github_branch=2021-09
@@ -15,6 +16,18 @@ git checkout ${github_branch}
 for app in hasher rng webui worker
 do
   docker image build --file Dockerfile-${app} --tag ${github_username}/${github_repo}:${github_branch}-${app} /mnt/
+done
+
+for app in hasher rng webui worker
+do
+  docker image tag ${github_username}/${github_repo}:${github_branch}-${app} ${dockerhub_username}/${github_repo}:${github_branch}-${app} 
+done
+
+docker login
+
+for app in hasher rng webui worker
+do
+  docker image push ${dockerhub_username}/${github_repo}:${github_branch}-${app} 
 done
 
 docker container run --entrypoint ruby --rm --volume ${PWD}/hasher/hasher.rb:/app/hasher.rb:ro --workdir /app/ ${github_username}/${github_repo}:${github_branch}-hasher hasher.rb
