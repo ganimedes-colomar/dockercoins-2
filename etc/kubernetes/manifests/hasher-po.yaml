@@ -5,15 +5,18 @@ metadata:
 spec:
   containers:
     -
-      args:
+      args: 
         - hasher.rb
       command:
         - ruby
       env:
         -
-          name: author
-          value: Ganimedes
-      image: ganimedescolomar/dockercoins-2:2021-09-hasher
+          name: AUTHOR
+          value: "Sebastian Colomar"
+      image: academiaonline/simplilearn-dockercoins:latest-hasher
+      livenessProbe:
+        tcpSocket:
+          port: 8080
       name: hasher-container
       ports:
         -
@@ -53,22 +56,13 @@ spec:
           memory: 100M
       volumeMounts:
         -
-          mountPath: /private/
-          name: private
-          readOnly: false
-        -
           mountPath: /public/
           name: public
           readOnly: false
-      workingDir: /private/
+      workingDir: /public/
   volumes:
     -
       emptyDir:
         medium: Memory
-        sizeLimit: 100M
-      name: private
-    -
-      emptyDir:
-        medium: Memory
-        sizeLimit: 100M
+        sizeLimit: 1M
       name: public
