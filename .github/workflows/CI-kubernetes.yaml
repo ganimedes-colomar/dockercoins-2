@@ -19,7 +19,7 @@ jobs:
           for app in hasher rng webui worker
           do
             docker image build --file Dockerfile-${app} --tag ${github_username}/${github_repo}:${github_branch}-${app} build-context/
-            sed --in-place /image:.*${app}/s/image:.*'$/image: '${github_username}/${github_repo}:${github_branch}-${app}/ etc/kubernetes/manifests/*.yaml
+            sed --in-place /image:.*${app}/s/image:.*$/image:\ ${github_username}\\/${github_repo}:${github_branch}-${app}/ etc/kubernetes/manifests/*.yaml
           done
       - name: kubernetes
         run: |
