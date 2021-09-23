@@ -32,10 +32,12 @@ jobs:
           master=$( kubectl get node | grep master | awk '{ print $1 }' )
           kubectl taint node ${master} node-role.kubernetes.io/master:NoSchedule-
           rm -rf ${uuid}
+      - name: deploy
+        run: |
+          rm -f etc/kubernetes/manifests/*-po.yaml
           sed --in-place /imagePullPolicy:/s/Always/Never/ etc/kubernetes/manifests/*.yaml
           sed --in-place /imagePullPolicy:/s/IfNotPresent/Never/ etc/kubernetes/manifests/*.yaml
-      - name: deploy
-        run: kubectl apply --filename etc/kubernetes/manifests/
+          kubectl apply --filename etc/kubernetes/manifests/
       - name: test
         run: |
           while true
