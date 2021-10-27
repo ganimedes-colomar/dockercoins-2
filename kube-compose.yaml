@@ -167,3 +167,307 @@ spec:
       storage: 1Gi
   storageClassName: gp2
 ---
+apiVersion: v1
+kind: ReplicationController
+metadata: 
+  name: rng-rc
+spec:
+  replicas: 2
+  selector: 
+    app: rng
+    branch: santander
+  template:
+    metadata: 
+      labels: 
+        app: rng
+        branch: santander
+    spec: 
+      containers:
+        - 
+          args: 
+            - rng.py
+          command:
+            - /usr/local/bin/python
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: ganimedescolomar/dockercoins-2:santander-rng
+          # imagePullPolicy: Always
+          name: rng-container
+          ports: 
+            -  
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts: 
+            - 
+              mountPath: /rng.py
+              name: rng-volume
+              readOnly: true
+              subPath: rng.py
+      initContainers:
+        - 
+          args: 
+            - -c 
+            - test -f rng.py || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/rng/rng.py
+          command:
+            - /bin/sh
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: library/busybox:latest
+          # imagePullPolicy: Always
+          name: rng-initcontainer
+          volumeMounts: 
+            - 
+              mountPath: /src/
+              name: rng-volume
+              readOnly: false
+          workingDir: /src/
+      volumes: 
+        - 
+          persistentVolumeClaim: 
+            claimName: rng-pvc
+            readOnly: false
+          name: rng-volume
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: rng-svc
+spec:
+  clusterIP: ''
+  ports: 
+    - 
+      port: 8080
+      protocol: TCP 
+      targetPort: 8080
+  selector:
+    app: rng
+    branch: santander
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rng-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 1Gi
+    requests:
+      storage: 1Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: ReplicationController
+metadata: 
+  name: webui-rc
+spec:
+  replicas: 2
+  selector: 
+    app: webui
+    branch: santander
+  template:
+    metadata: 
+      labels: 
+        app: webui
+        branch: santander
+    spec: 
+      containers:
+        - 
+          args: 
+            - webui.js
+          command:
+            - /usr/local/bin/node
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: ganimedescolomar/dockercoins-2:santander-webui
+          # imagePullPolicy: Always
+          name: webui-container
+          ports: 
+            -  
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts: 
+            - 
+              mountPath: /webui.js
+              name: webui-volume
+              readOnly: true
+              subPath: webui.js
+            - 
+              mountPath: /files/
+              name: webui-files-volume
+              readOnly: true
+      initContainers:
+        - 
+          args: 
+            - -c 
+            - test -f webui.js || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/webui.js
+          command:
+            - /bin/sh
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: library/busybox:latest
+          # imagePullPolicy: Always
+          name: webui-initcontainer
+          volumeMounts: 
+            - 
+              mountPath: /src/
+              name: webui-volume
+              readOnly: false
+          workingDir: /src/
+        - 
+          args: 
+            - -c 
+            - if ! test -d files; then mkdir files; cd files; for file in d3.min.js index.html jquery-1.11.3.min.js rickshaw.min.css rickshaw.min.js; do wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/files/${file}; done; ln -s jquery-1.11.3.min.js jquery.js; fi
+          command:
+            - /bin/sh
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: library/busybox:latest
+          # imagePullPolicy: Always
+          name: webui-files-initcontainer
+          volumeMounts: 
+            - 
+              mountPath: /src/
+              name: webui-volume
+              readOnly: false
+          workingDir: /src/
+      volumes: 
+        - 
+          persistentVolumeClaim: 
+            claimName: webui-pvc
+            readOnly: false
+          name: webui-volume
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: webui-svc
+spec:
+  clusterIP: ''
+  ports: 
+    - 
+      port: 8080
+      protocol: TCP 
+      targetPort: 8080
+  selector:
+    app: webui
+    branch: santander
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webui-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 1Gi
+    requests:
+      storage: 1Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: ReplicationController
+metadata: 
+  name: worker-rc
+spec:
+  replicas: 2
+  selector: 
+    app: worker
+    branch: santander
+  template:
+    metadata: 
+      labels: 
+        app: worker
+        branch: santander
+    spec: 
+      containers:
+        - 
+          args: 
+            - worker.py
+          command:
+            - /usr/local/bin/python
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: ganimedescolomar/dockercoins-2:santander-worker
+          # imagePullPolicy: Always
+          name: worker-container
+          volumeMounts: 
+            - 
+              mountPath: /worker.py
+              name: worker-volume
+              readOnly: true
+              subPath: worker.py
+      initContainers:
+        - 
+          args: 
+            - -c 
+            - test -f worker.py || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/worker/worker.py
+          command:
+            - /bin/sh
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: library/busybox:latest
+          # imagePullPolicy: Always
+          name: worker-initcontainer
+          volumeMounts: 
+            - 
+              mountPath: /src/
+              name: worker-volume
+              readOnly: false
+          workingDir: /src/
+      volumes: 
+        - 
+          persistentVolumeClaim: 
+            claimName: worker-pvc
+            readOnly: false
+          name: worker-volume
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: worker-svc
+spec:
+  clusterIP: ''
+  ports: 
+    - 
+      port: 8080
+      protocol: TCP 
+      targetPort: 8080
+  selector:
+    app: worker
+    branch: santander
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: worker-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 1Gi
+    requests:
+      storage: 1Gi
+  storageClassName: gp2
+---
