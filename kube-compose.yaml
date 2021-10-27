@@ -498,3 +498,86 @@ spec:
   policyTypes:
     - Ingress
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rng-netpol
+spec:
+  ingress:
+    -
+      from:
+        -
+          podSelector:
+            matchLabels:
+              app: worker
+              branch: santander
+      ports:
+        -
+          port: 8080
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      app: rng
+      branch: santander
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-netpol
+spec:
+  ingress:
+    -
+      from:
+        -
+          podSelector:
+            matchLabels:
+              app: webui
+              branch: santander
+        -
+          podSelector:
+            matchLabels:
+              app: worker
+              branch: santander
+      ports:
+        -
+          port: 6379
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      app: redis
+      branch: santander
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: webui-netpol
+spec:
+  ingress:
+    -
+      ports:
+        -
+          port: 8080
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      app: webui
+      branch: santander
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: worker-netpol
+spec:
+  podSelector:
+    matchLabels:
+      app: worker
+      branch: santander
+  policyTypes:
+    - Ingress
+---
