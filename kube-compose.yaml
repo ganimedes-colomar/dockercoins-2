@@ -327,7 +327,7 @@ spec:
         - 
           args: 
             - -c 
-            - if ! test -d files; then mkdir files; cd files; for file in d3.min.js index.html jquery-1.11.3.min.js rickshaw.min.css rickshaw.min.js; do wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/files/${file}; done; ln -s jquery-1.11.3.min.js jquery.js; fi
+            - if ! test -f d3.min.js; then for file in d3.min.js index.html jquery-1.11.3.min.js rickshaw.min.css rickshaw.min.js; do wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/files/${file}; done; ln -s jquery-1.11.3.min.js jquery.js; fi
           command:
             - /bin/sh
           env: 
@@ -340,7 +340,7 @@ spec:
           volumeMounts: 
             - 
               mountPath: /src/
-              name: webui-volume
+              name: webui-files-volume
               readOnly: false
           workingDir: /src/
       volumes: 
@@ -349,6 +349,11 @@ spec:
             claimName: webui-pvc
             readOnly: false
           name: webui-volume
+        - 
+          persistentVolumeClaim: 
+            claimName: webui-files-pvc
+            readOnly: false
+          name: webui-files-volume
 ---
 apiVersion: v1
 kind: Service
@@ -370,6 +375,20 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: webui-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 1Gi
+    requests:
+      storage: 1Gi
+  storageClassName: gp2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webui-files-pvc
 spec:
   accessModes:
     - ReadWriteOnce
