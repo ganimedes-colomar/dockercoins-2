@@ -474,3 +474,27 @@ spec:
       storage: 1Gi
   storageClassName: gp2
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hasher-netpol
+spec:
+  ingress:
+    -
+      from:
+        -
+          podSelector:
+            matchLabels:
+              app: worker
+              branch: santander
+      ports:
+        -
+          port: 8080
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      app: hasher
+      branch: santander
+  policyTypes:
+    - Ingress
+---
