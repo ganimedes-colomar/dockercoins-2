@@ -1,0 +1,99 @@
+name: CI
+on: 
+  push:
+    branches:
+      - santander
+env:
+  uuid: 772238
+jobs:
+  docker:
+    runs-on: ubuntu-18.04
+    steps:
+      -
+        name: checkout
+        uses: actions/checkout@v2
+      -
+        name: build
+        run: for app in hasher rng webui worker; do docker build -f ${app}/Dockerfile -t ${app}:${uuid} .; done
+      -
+        name: network
+        run: for app in hasher redis rng; do docker network create ${app}; done
+      -
+        name: run-redis
+        run: docker run -d --entrypoint /usr/local/bin/docker-entrypoint.sh --name redis --network redis --read-only --restart always -v redis:/data/:rw library/redis:alpine redis-server
+      -
+        name: run-hasher
+        run: docker run -d --entrypoint /usr/local/bin/ruby --name hasher --network hasher --read-only --restart always -v ${PWD}/hasher/hasher.rb:/hasher.rb:ro hasher:${uuid} hasher.rb
+      -
+        name: run-rng
+        run: docker run -d --entrypoint /usr/local/bin/python --name rng --network rng --read-only --restart always -v ${PWD}/rng/rng.py:/rng.py:ro -v /usr/local/lib/python3.10/http/__pycache__/ -v /usr/local/lib/python3.10/__pycache__/ rng:${uuid} rng.py
+      -
+        name: run-worker
+        run: docker run -d --entrypoint /usr/local/bin/python --name worker --network redis --read-only --restart always -v ${PWD}/worker/worker.py:/worker.py:ro -v /usr/local/lib/python3.10/distutils/__pycache__/ worker:${uuid} worker.py
+      -
+        name: network-worker
+        run: for network in hasher rng; do docker network connect ${network} worker; done
+      -
+        name: run-webui
+        run: docker run -d --entrypoint /usr/local/bin/node --name webui --network redis -p 80:8080 --read-only --restart always -v ${PWD}/webui/webui.js:/webui.js:ro -v ${PWD}/webui/files/:/files/:ro webui:${uuid} webui.js
+      -
+        name: test
+        run: while true; do sleep 10; curl localhost/index.html | grep -i Coin && break; done
+  swarm:
+    runs-on: ubuntu-18.04
+    steps:
+      -
+        name: checkout
+        uses: actions/checkout@v2
+      -
+        name: build
+        run: docker build --file Dockerfile --tag phpinfo:${uuid} .
+      -
+        name: swarm
+        run: docker swarm init
+      -
+        name: compose
+        run: sed -i /node.role/s/worker/manager/ docker-compose.yaml
+      -
+        name: nodeport
+        run: sed -i /8080:8080/s/8080/80/ docker-compose.yaml
+      -
+        name: image
+        run: sed -i /image:.*phpinfo/s/image:.*$/image:' 'phpinfo:${uuid}/ docker-compose.yaml
+      -
+        name: deploy
+        run: docker stack deploy -c docker-compose.yaml phpinfo
+      -
+        name: test
+        run: while true; do sleep 10; curl $( ifconfig | grep eth0 -A 1 | awk /inet/'{ print $2 }' )/src/index.php | grep phpinfo && break; done
+  kubernetes:
+    runs-on: ubuntu-18.04
+    steps:
+      -
+        name: checkout
+        uses: actions/checkout@v2
+      -
+        name: build
+        run: docker build --file Dockerfile --tag phpinfo:${uuid} .
+      -
+        name: kubernetes
+        run: |
+          git clone --single-branch -b v1.2 https://github.com/academiaonline/kubernetes ${uuid}
+          source ${uuid}/bin/cluster/ubuntu18/install-docker-kubelet.sh
+          source ${uuid}/bin/cluster/ubuntu18/install-leader.sh
+          master=$( kubectl get node | awk /master/'{ print $1 }' )
+          kubectl taint node $master node-role.kubernetes.io/master:NoSchedule-
+      -
+        name: image
+        run: sed -i /image:.*phpinfo/s/image:.*$/image:' 'phpinfo:${uuid}/ kube-compose.yaml
+      -
+        name: cm
+        run: kubectl create cm --from-file ./src/index.php phpinfo-cm
+      -
+        name: deploy
+        run: kubectl apply -f kube-compose.yaml
+      -
+        name: test
+        run: while true; do sleep 10; kubectl logs svc/phpinfo-svc | grep PHP && break; done
+  #openshift:
+  
