@@ -92,3 +92,78 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: gp2
+---
+apiVersion: v1
+kind: ReplicationController
+metadata: 
+  name: redis-rc
+spec:
+  replicas: 1
+  selector: 
+    app: redis
+    branch: santander
+  template:
+    metadata: 
+      labels: 
+        app: redis
+        branch: santander
+    spec: 
+      containers:
+        - 
+          args: 
+            - redis-server
+          command:
+            - /usr/local/bin/docker-entrypoint.sh
+          env: 
+            - 
+              name: author
+              value: Ganimedes
+          image: library/redis:alpine
+          # imagePullPolicy: Always
+          name: redis-container
+          ports: 
+            -  
+              containerPort: 6379
+              protocol: TCP
+          volumeMounts: 
+            - 
+              mountPath: /data/
+              name: redis-volume
+              readOnly: false
+      volumes: 
+        - 
+          persistentVolumeClaim: 
+            claimName: redis-pvc
+            readOnly: false
+          name: redis-volume
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: redis-svc
+spec:
+  clusterIP: ''
+  ports: 
+    - 
+      port: 6379
+      protocol: TCP 
+      targetPort: 6379
+  selector:
+    app: redis
+    branch: santander
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      storage: 1Gi
+    requests:
+      storage: 1Gi
+  storageClassName: gp2
+---
