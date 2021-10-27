@@ -88,7 +88,7 @@ spec:
     - ReadWriteOnce
   resources:
     limits:
-      storage: 1M
+      storage: 1Gi
     requests:
-      storage: 1M
+      storage: 1Gi
   storageClassName: gp2
