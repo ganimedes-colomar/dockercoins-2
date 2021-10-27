@@ -66,7 +66,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: hasher-svc
+  name: hasher
 spec:
   clusterIP: ''
   ports: 
@@ -140,7 +140,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: redis-svc
+  name: redis
 spec:
   clusterIP: ''
   ports: 
@@ -235,7 +235,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: rng-svc
+  name: rng
 spec:
   clusterIP: ''
   ports: 
@@ -358,7 +358,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: webui-svc
+  name: webui
 spec:
   clusterIP: ''
   ports: 
@@ -459,22 +459,6 @@ spec:
             claimName: worker-pvc
             readOnly: false
           name: worker-volume
----
-apiVersion: v1
-kind: Service
-metadata: 
-  name: worker-svc
-spec:
-  clusterIP: ''
-  ports: 
-    - 
-      port: 8080
-      protocol: TCP 
-      targetPort: 8080
-  selector:
-    app: worker
-    branch: santander
-  type: ClusterIP
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
