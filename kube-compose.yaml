@@ -25,59 +25,13 @@ spec:
             - 
               name: author
               value: Ganimedes
-          image: ganimedescolomar/dockercoins-2:santander-hasher
+          image: secobau/dockercoins:2.6-hasher
           # imagePullPolicy: Always
           name: hasher-container
           ports: 
             -  
               containerPort: 8080
               protocol: TCP
-          volumeMounts: 
-            - 
-              mountPath: /hasher.rb
-              name: hasher-volume
-              readOnly: true
-              subPath: hasher.rb
-      initContainers:
-        - 
-          args: 
-            - -c 
-            - test -f hasher.rb || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/hasher/hasher.rb
-          command:
-            - /bin/sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/busybox:latest
-          # imagePullPolicy: Always
-          name: hasher-initcontainer
-          volumeMounts: 
-            - 
-              mountPath: /src/
-              name: hasher-volume
-              readOnly: false
-          workingDir: /src/
-      volumes: 
-        - 
-          persistentVolumeClaim: 
-            claimName: hasher-pvc
-            readOnly: false
-          name: hasher-volume
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: hasher-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -106,45 +60,13 @@ spec:
             - 
               name: author
               value: Ganimedes
-          image: ganimedescolomar/dockercoins-2:santander-rng
+          image: secobau/dockercoins:2.6-rng
           # imagePullPolicy: Always
           name: rng-container
           ports: 
             -  
               containerPort: 8080
               protocol: TCP
-          volumeMounts: 
-            - 
-              mountPath: /rng.py
-              name: rng-volume
-              readOnly: true
-              subPath: rng.py
-      initContainers:
-        - 
-          args: 
-            - -c 
-            - test -f rng.py || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/rng/rng.py
-          command:
-            - /bin/sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/busybox:latest
-          # imagePullPolicy: Always
-          name: rng-initcontainer
-          volumeMounts: 
-            - 
-              mountPath: /src/
-              name: rng-volume
-              readOnly: false
-          workingDir: /src/
-      volumes: 
-        - 
-          persistentVolumeClaim: 
-            claimName: rng-pvc
-            readOnly: false
-          name: rng-volume
 ---
 apiVersion: v1
 kind: Service
@@ -163,20 +85,6 @@ spec:
   selector:
     branch: santander
   type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: rng-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
