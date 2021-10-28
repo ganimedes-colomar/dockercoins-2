@@ -3,12 +3,14 @@ kind: ReplicationController
 metadata: 
   name: hasher-rc
 spec:
-  replicas: 2
+  replicas: 1
   selector: 
     app: hasher
     branch: santander
   template:
     metadata: 
+      annotations:
+        sidecar.istio.io/inject: true
       labels: 
         app: hasher
         branch: santander
@@ -64,22 +66,6 @@ spec:
           name: hasher-volume
 ---
 apiVersion: v1
-kind: Service
-metadata: 
-  name: hasher
-spec:
-  clusterIP: ''
-  ports: 
-    - 
-      port: 8080
-      protocol: TCP 
-      targetPort: 8080
-  selector:
-    app: hasher
-    branch: santander
-  type: ClusterIP
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: hasher-pvc
@@ -96,88 +82,16 @@ spec:
 apiVersion: v1
 kind: ReplicationController
 metadata: 
-  name: redis-rc
-spec:
-  replicas: 1
-  selector: 
-    app: redis
-    branch: santander
-  template:
-    metadata: 
-      labels: 
-        app: redis
-        branch: santander
-    spec: 
-      containers:
-        - 
-          args: 
-            - redis-server
-          command:
-            - /usr/local/bin/docker-entrypoint.sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/redis:alpine
-          # imagePullPolicy: Always
-          name: redis-container
-          ports: 
-            -  
-              containerPort: 6379
-              protocol: TCP
-          volumeMounts: 
-            - 
-              mountPath: /data/
-              name: redis-volume
-              readOnly: false
-      volumes: 
-        - 
-          persistentVolumeClaim: 
-            claimName: redis-pvc
-            readOnly: false
-          name: redis-volume
----
-apiVersion: v1
-kind: Service
-metadata: 
-  name: redis
-spec:
-  clusterIP: ''
-  ports: 
-    - 
-      port: 6379
-      protocol: TCP 
-      targetPort: 6379
-  selector:
-    app: redis
-    branch: santander
-  type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: redis-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
----
-apiVersion: v1
-kind: ReplicationController
-metadata: 
   name: rng-rc
 spec:
-  replicas: 2
+  replicas: 1
   selector: 
     app: rng
     branch: santander
   template:
     metadata: 
+      annotations:
+        sidecar.istio.io/inject: true
       labels: 
         app: rng
         branch: santander
@@ -235,7 +149,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: rng
+  labels:
+    service: dockercoins
+  name: dockercoins
 spec:
   clusterIP: ''
   ports: 
@@ -244,7 +160,6 @@ spec:
       protocol: TCP 
       targetPort: 8080
   selector:
-    app: rng
     branch: santander
   type: ClusterIP
 ---
@@ -262,322 +177,56 @@ spec:
       storage: 1Gi
   storageClassName: gp2
 ---
-apiVersion: v1
-kind: ReplicationController
-metadata: 
-  name: webui-rc
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dockercoins
 spec:
-  replicas: 2
-  selector: 
-    app: webui
-    branch: santander
-  template:
-    metadata: 
-      labels: 
-        app: webui
-        branch: santander
-    spec: 
-      containers:
-        - 
-          args: 
-            - webui.js
-          command:
-            - /usr/local/bin/node
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: ganimedescolomar/dockercoins-2:santander-webui
-          # imagePullPolicy: Always
-          name: webui-container
-          ports: 
-            -  
-              containerPort: 8080
-              protocol: TCP
-          volumeMounts: 
-            - 
-              mountPath: /webui.js
-              name: webui-volume
-              readOnly: true
-              subPath: webui.js
-            - 
-              mountPath: /files/
-              name: webui-files-volume
-              readOnly: true
-      initContainers:
-        - 
-          args: 
-            - -c 
-            - test -f webui.js || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/webui.js
-          command:
-            - /bin/sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/busybox:latest
-          # imagePullPolicy: Always
-          name: webui-initcontainer
-          volumeMounts: 
-            - 
-              mountPath: /src/
-              name: webui-volume
-              readOnly: false
-          workingDir: /src/
-        - 
-          args: 
-            - -c 
-            - if ! test -f d3.min.js; then for file in d3.min.js index.html jquery-1.11.3.min.js rickshaw.min.css rickshaw.min.js; do wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/webui/files/${file}; done; ln -s jquery-1.11.3.min.js jquery.js; fi
-          command:
-            - /bin/sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/busybox:latest
-          # imagePullPolicy: Always
-          name: webui-files-initcontainer
-          volumeMounts: 
-            - 
-              mountPath: /src/
-              name: webui-files-volume
-              readOnly: false
-          workingDir: /src/
-      volumes: 
-        - 
-          persistentVolumeClaim: 
-            claimName: webui-pvc
-            readOnly: false
-          name: webui-volume
-        - 
-          persistentVolumeClaim: 
-            claimName: webui-files-pvc
-            readOnly: false
-          name: webui-files-volume
+  host: dockercoins
+  subsets:
+    -
+      name: hasher
+      labels:
+        app: hasher
+    -
+      name: rng
+      labels:
+        app: rng
 ---
-apiVersion: v1
-kind: Service
-metadata: 
-  name: webui
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dockercoins
 spec:
-  clusterIP: ''
-  ports: 
-    - 
-      port: 8080
-      protocol: TCP 
-      targetPort: 8080
+  hosts:
+    - '*'
+  gateways:
+    - dockercoins
+  http:
+    -
+      match:
+        -
+          uri:
+            exact: /
+      route:
+        -
+          destination: 
+            host: dockercoins
+            port:
+              number: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: dockercoins
+spec:
   selector:
-    app: webui
-    branch: santander
-  type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: webui-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: webui-files-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
----
-apiVersion: v1
-kind: ReplicationController
-metadata: 
-  name: worker-rc
-spec:
-  replicas: 2
-  selector: 
-    app: worker
-    branch: santander
-  template:
-    metadata: 
-      labels: 
-        app: worker
-        branch: santander
-    spec: 
-      containers:
-        - 
-          args: 
-            - worker.py
-          command:
-            - /usr/local/bin/python
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: ganimedescolomar/dockercoins-2:santander-worker
-          # imagePullPolicy: Always
-          name: worker-container
-          volumeMounts: 
-            - 
-              mountPath: /worker.py
-              name: worker-volume
-              readOnly: true
-              subPath: worker.py
-      initContainers:
-        - 
-          args: 
-            - -c 
-            - test -f worker.py || wget https://raw.githubusercontent.com/ganimedes-colomar/dockercoins-2/santander/worker/worker.py
-          command:
-            - /bin/sh
-          env: 
-            - 
-              name: author
-              value: Ganimedes
-          image: library/busybox:latest
-          # imagePullPolicy: Always
-          name: worker-initcontainer
-          volumeMounts: 
-            - 
-              mountPath: /src/
-              name: worker-volume
-              readOnly: false
-          workingDir: /src/
-      volumes: 
-        - 
-          persistentVolumeClaim: 
-            claimName: worker-pvc
-            readOnly: false
-          name: worker-volume
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: worker-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    limits:
-      storage: 1Gi
-    requests:
-      storage: 1Gi
-  storageClassName: gp2
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: hasher-netpol
-spec:
-  ingress:
+    istio: ingressgateway
+  servers:
     -
-      from:
-        -
-          podSelector:
-            matchLabels:
-              app: worker
-              branch: santander
-      ports:
-        -
-          port: 8080
-          protocol: TCP
-  podSelector:
-    matchLabels:
-      app: hasher
-      branch: santander
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: rng-netpol
-spec:
-  ingress:
-    -
-      from:
-        -
-          podSelector:
-            matchLabels:
-              app: worker
-              branch: santander
-      ports:
-        -
-          port: 8080
-          protocol: TCP
-  podSelector:
-    matchLabels:
-      app: rng
-      branch: santander
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: redis-netpol
-spec:
-  ingress:
-    -
-      from:
-        -
-          podSelector:
-            matchLabels:
-              app: webui
-              branch: santander
-        -
-          podSelector:
-            matchLabels:
-              app: worker
-              branch: santander
-      ports:
-        -
-          port: 6379
-          protocol: TCP
-  podSelector:
-    matchLabels:
-      app: redis
-      branch: santander
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: webui-netpol
-spec:
-  ingress:
-    -
-      ports:
-        -
-          port: 8080
-          protocol: TCP
-  podSelector:
-    matchLabels:
-      app: webui
-      branch: santander
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: worker-netpol
-spec:
-  podSelector:
-    matchLabels:
-      app: worker
-      branch: santander
-  policyTypes:
-    - Ingress
----
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+      hosts:
+        - '*'
