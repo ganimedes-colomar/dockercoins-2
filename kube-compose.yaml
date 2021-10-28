@@ -17,10 +17,6 @@ spec:
     spec: 
       containers:
         - 
-          args: 
-            - hasher.rb
-          command:
-            - /usr/local/bin/ruby
           env: 
             - 
               name: author
@@ -52,10 +48,6 @@ spec:
     spec: 
       containers:
         - 
-          args: 
-            - rng.py
-          command:
-            - /usr/local/bin/python
           env: 
             - 
               name: author
