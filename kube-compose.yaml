@@ -25,7 +25,7 @@ spec:
             - 
               name: author
               value: Ganimedes
-          image: secobau/dockercoins:2.6-hasher
+          image: academiaonline/dockercoins:2.6-hasher
           # imagePullPolicy: Always
           name: hasher-container
           ports: 
@@ -60,7 +60,7 @@ spec:
             - 
               name: author
               value: Ganimedes
-          image: secobau/dockercoins:2.6-rng
+          image: academiaonline/dockercoins:2.6-rng
           # imagePullPolicy: Always
           name: rng-container
           ports: 
