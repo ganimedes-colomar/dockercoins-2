@@ -1,0 +1,2 @@
+FROM python:alpine3.14@sha256:1aac9b1e6201c1a224742e2f9ab0ca37689e6c9754b94380b05c520749fb8668
+RUN pip install Flask

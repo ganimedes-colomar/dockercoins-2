@@ -1,1 +1,3 @@
 FROM ruby:alpine@sha256:a4aca221cb0c4e07f9c87ca9b75d6a3bc7b66b37169726fdc00b6aeaa86faf1a
+RUN apk add build-base
+RUN gem install sinatra thin
