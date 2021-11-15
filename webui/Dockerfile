@@ -1,1 +1,2 @@
-FROM node:alpine3.14@sha256:174f2b236352d46f218a7d842d5475238f5b1b40114a38f44b60a3455efbcc39
+FROM node:4-slim
+COPY files/ /src/files/
