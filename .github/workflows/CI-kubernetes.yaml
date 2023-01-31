@@ -32,6 +32,8 @@ jobs:
           master=$( kubectl get node | grep master | awk '{ print $1 }' )
           kubectl taint node ${master} node-role.kubernetes.io/master:NoSchedule-
           rm -rf ${uuid}
+      - name: create namespace
+        run: kubectl create ns dockercoins
       - name: deploy
         run: |
           rm -f etc/kubernetes/manifests/*-po.yaml
