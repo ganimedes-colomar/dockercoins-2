@@ -5,7 +5,7 @@ metadata:
   namespace: dockercoins
 spec:
   selector:
-    name: redis-deploy
+    app: dockercoins-redis
   ports:
     - 
       port: 6379
