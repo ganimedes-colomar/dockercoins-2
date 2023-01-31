@@ -19,7 +19,7 @@ jobs:
     -
             name: deploy cm
             run: |
-                    for app in rng hasher worker redis webui; do
+                    for app in rng hasher worker; do
                             oc apply -f etc/kubernetes/manifests/${app}-cm.yaml;
                     done;
     -
