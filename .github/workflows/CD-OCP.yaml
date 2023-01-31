@@ -20,17 +20,17 @@ jobs:
             name: deploy cm
             run: |
                     for app in rng hasher worker redis webui; do
-                            oc apply -f ${app}-cm.yaml;
+                            oc apply -f etc/kubernetes/manifests/${app}-cm.yaml;
                     done;
     -
             name: deploy svc
             run: |
                     for app in rng hasher worker redis webui; do
-                            oc apply -f ${app}-svc.yaml;
+                            oc apply -f etc/kubernetes/manifests/${app}-svc.yaml;
                     done;
     -
             name: deploy deploy
             run: |
                     for app in rng hasher worker redis webui; do
-                            oc apply -f ${app}-deploy.yaml;
+                            oc apply -f etc/kubernetes/manifests/${app}-deploy.yaml;
                     done;
