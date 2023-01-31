@@ -36,7 +36,7 @@ spec:
           workingDir: /data/
       volumes:
         - name: redis-volume
-          persistentVolumeClaim: {}
+          persistentVolumeClaim:
             claimName: redis-pvc
             readOnly: false
 
