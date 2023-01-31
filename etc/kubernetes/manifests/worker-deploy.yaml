@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deploy
+  namespace: dockercoins
+spec:
+  selector:
+    matchLabels:
+      app: dockercoins-worker
+  template:
+    metadata:
+      labels:
+        app: dockercoins-worker
+    spec:
+      replicas: 3
+      containers:
+        - name: worker-container
+          args:
+            - worker.py
+          command:
+            - python
+          image: academiaonline/simplilearn-dockercoins:latest-worker
+          port:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: 100M
+              cpu: 100m
+            requests:
+              memory: 100M
+              cpu: 100m
+          volumeMounts:
+            - name: worker-volume
+              mountPath: /app/worker.py
+              subPath: worker.py
+              readOnly: true
+          workingDir: /app/
+      volumes:
+        - name: worker-volume
+          configMap:
+            name: worker-cm
+            items:
+              - key: worker.py
+                path: worker.py

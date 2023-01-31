@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rng-svc
+  name: worker-svc
   namespace: dockercoins
 spec:
   ports:
     - port: 8080
       targetPort: 8080
   selector:
-    app: dockercoins-rng
+    app: dockercoins-worker

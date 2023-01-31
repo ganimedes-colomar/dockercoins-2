@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasher-deploy
+  namespace: dockercoins
+spec:
+  selector:
+    matchLabels:
+      app: dockercoins-hasher
+  template:
+    metadata:
+      labels:
+        app: dockercoins-hasher
+    spec:
+      replicas: 3
+      containers:
+        - name: hasher-container
+          args:
+            - hasher.rb
+          command:
+            - ruby
+          image: academiaonline/simplilearn-dockercoins:latest-hasher
+          port:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: 100M
+              cpu: 100m
+            requests:
+              memory: 100M
+              cpu: 100m
+          volumeMounts:
+            - name: hasher-volume
+              mountPath: /app/hasher.rb
+              subPath: hasher.rb
+              readOnly: true
+          workingDir: /app/
+      volumes:
+        - name: hasher-volume
+          configMap:
+            name: hasher-cm
+            items:
+              - key: hasher.rb
+                path: hasher.rb
