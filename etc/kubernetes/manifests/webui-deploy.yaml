@@ -29,7 +29,7 @@ spec:
               memory: 100M
               cpu: 100m
           volumeMounts:
-            - mountPath: /src/
+            - mountPath: /app/
               name: webui-volume
               readOnly: true
           workingDir: /app/webui/
