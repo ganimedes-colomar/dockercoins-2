@@ -7,12 +7,12 @@ spec:
   selector:
     matchLabels:
       app: dockercoins-hasher
+  replicas: 3
   template:
     metadata:
       labels:
         app: dockercoins-hasher
     spec:
-      replicas: 3
       containers:
         - name: hasher-container
           args:
@@ -20,7 +20,7 @@ spec:
           command:
             - ruby
           image: academiaonline/simplilearn-dockercoins:latest-hasher
-          port:
+          ports:
             - containerPort: 8080
           resources:
             limits:

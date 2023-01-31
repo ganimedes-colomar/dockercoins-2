@@ -7,12 +7,12 @@ spec:
   selector:
     matchLabels:
       app: dockercoins-rng
+  replicas: 3
   template:
     metadata:
       labels:
         app: dockercoins-rng
     spec:
-      replicas: 3
       containers:
         - name: rng-container
           args:
@@ -20,7 +20,7 @@ spec:
           command:
             - python
           image: academiaonline/simplilearn-dockercoins:latest-rng
-          port:
+          ports:
             - containerPort: 8080
           resources:
             limits:

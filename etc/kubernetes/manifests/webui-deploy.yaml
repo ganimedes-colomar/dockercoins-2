@@ -19,7 +19,7 @@ spec:
           command:
             - node
           image: academiaonline/simplilearn-dockercoins:latest-webui
-          port:
+          ports:
             - containerPort: 8080
           resources:
             limits:

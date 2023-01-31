@@ -7,12 +7,12 @@ spec:
   selector:
     matchLabels:
       app: dockercoins-worker
+  replicas: 3
   template:
     metadata:
       labels:
         app: dockercoins-worker
     spec:
-      replicas: 3
       containers:
         - name: worker-container
           args:
@@ -20,7 +20,7 @@ spec:
           command:
             - python
           image: academiaonline/simplilearn-dockercoins:latest-worker
-          port:
+          ports:
             - containerPort: 8080
           resources:
             limits:
