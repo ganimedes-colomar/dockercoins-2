@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: webui-deploy
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: dockercoins-webui
@@ -11,7 +12,6 @@ spec:
       labels:
         app: dockercoins-webui
     spec:
-      replicas: 3
       containers:
         - name: webui-container
           args:
