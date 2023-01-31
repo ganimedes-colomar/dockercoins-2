@@ -1,0 +1,36 @@
+name: cd
+on:
+  release:
+    types:
+      - published
+jobs:
+  openshift:
+    env:
+      token: sha256~K7RxO_hO04KxOQzQkLz_sqlvz-58QbYnEmOvo7SjAtI
+      ocp_api: api.okd4.ganimedes-colomar.com
+    runs-on: ubuntu-18.04
+    steps:
+    -
+            name: checkout
+            uses: actions/checkout@v2
+    -
+            name: oc login
+            run: oc login --token=${token} --server=https://${ocp_api}:6443
+    -
+            name: deploy cm
+            run: |
+                    for app in rng hasher worker redis webui; do
+                            oc apply -f ${app}-cm.yaml;
+                    done;
+    -
+            name: deploy svc
+            run: |
+                    for app in rng hasher worker redis webui; do
+                            oc apply -f ${app}-svc.yaml;
+                    done;
+    -
+            name: deploy deploy
+            run: |
+                    for app in rng hasher worker redis webui; do
+                            oc apply -f ${app}-deploy.yaml;
+                    done;
