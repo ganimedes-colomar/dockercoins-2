@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-netpol
+  namespace: dockercoins
+spec:
+  podSelector:
+    matchLabels:
+      app: dockercoins-redis
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: dockercoins-worker
+        - podSelector:
+            matchLabels:
+              app: dockercoins-webui
+      ports:
+        - port: 6379
