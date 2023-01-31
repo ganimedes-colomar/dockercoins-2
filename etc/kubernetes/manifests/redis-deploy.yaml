@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deploy
+  namespace: dockercoins
+spec:
+  selector:
+    matchLabels:
+      app: dockercoins-redis
+  template:
+    metadata:
+      labels:
+        app: dockercoins-redis
+    spec:
+      replicas: 1
+      containers:
+        - name: redis-container
+          args:
+            - redis-server
+          command:
+            - docker-entrypoint.sh
+          image: redis:6.2.4-alpine3.13@sha256:b7cb70118c9729f8dc019187a4411980418a87e6a837f4846e87130df379e2c8
+          port:
+            - containerPort: 6379
+          resources:
+            limits:
+              memory: 100M
+              cpu: 100m
+            requests:
+              memory: 100M
+              cpu: 100m
+          volumeMounts:
+            - name: redis-volume
+              mountPath: /data/
+              readOnly: false
+          workingDir: /data/
+      volumes:
+        - name: redis-volume
+          persistentVolumeClaim: {}
+            claimName: redis-pvc
+            readOnly: false
+
